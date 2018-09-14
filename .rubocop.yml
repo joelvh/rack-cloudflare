@@ -1,0 +1,43 @@
+AllCops:
+  TargetRubyVersion: 2.5.1
+  # Rails: true
+  # Include:
+  #   - '**/Rakefile'
+  #   - '**/config.ru'
+  Exclude:
+    - 'doc/**/*'
+    - 'tmp/**/*'
+    - 'bin/**/*'
+    - 'db/**/*'
+    - 'test/**/*'
+    - 'config/**/*'
+    - 'script/**/*'
+    - 'vendor/**/*'
+    - 'spec/**/*'
+    - !ruby/regexp /old_and_unused\.rb$/
+
+# Style/WhileUntilModifier:
+#   MaxLineLength: 160
+
+# Style/IfUnlessModifier:
+#   MaxLineLength: 160
+
+Metrics/LineLength:
+  Max: 160
+
+Metrics/AbcSize:
+  Max: 120
+
+Metrics/MethodLength:
+  CountComments: false  # count full line comments?
+  Max: 120
+
+NumericPredicate:
+  EnforcedStyle: comparison
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'lib/rack/cloudflare/countries.rb'
