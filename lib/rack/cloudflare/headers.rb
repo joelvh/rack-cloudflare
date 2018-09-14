@@ -69,7 +69,7 @@ module Rack
       # "Cf-Visitor: { \"scheme\":\"https\"}"
       def visitor
         return unless has?(HTTP_CF_VISITOR)
-        JSON.parse @headers[HTTP_CF_VISITOR]
+        ::JSON.parse @headers[HTTP_CF_VISITOR]
       end
 
       def remote_addr

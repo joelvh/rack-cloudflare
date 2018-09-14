@@ -14,7 +14,7 @@ RubyCritic::RakeTask.new do |task|
   # task.name    = 'something_special'
 
   # # Glob pattern to match source files. Defaults to FileList['.'].
-  task.paths = FileList['apps/**/*.rb', 'lib/**/*.rb']
+  task.paths = FileList['lib/**/*.rb']
 
   # # You can pass all the options here in that are shown by "rubycritic -h" except for
   # # "-p / --path" since that is set separately. Defaults to ''.

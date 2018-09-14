@@ -71,7 +71,7 @@ config.middleware.use Rack::Cloudflare::Middleware::RewriteHeaders
 You can customize whether rewritten headers should be backed up and what names to use.
 
 ```ruby
-# Toggle header backups
+# Toggle header backups (default: true)
 Rack::Cloudflare::Headers.backup = false
 
 # Rename backed up headers (defaults: "ORIGINAL_REMOTE_ADDR", "ORIGINAL_FORWARDED_FOR")

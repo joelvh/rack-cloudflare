@@ -20,16 +20,16 @@ module Rack
         end
 
         def fetch(url)
-          parse Net::HTTP.get(URI(url))
+          parse ::Net::HTTP.get(URI(url))
         end
 
         def read(filename)
-          parse File.read(filename)
+          parse ::File.read(filename)
         end
 
         def parse(string)
           return [] if string.to_s.strip.empty?
-          string.split(/[,\s]+/).map { |ip| IPAddr.new(ip.strip) }
+          string.split(/[,\s]+/).map { |ip| ::IPAddr.new(ip.strip) }
         end
       end
 
