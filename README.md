@@ -27,11 +27,11 @@ You can block access to non-Cloudflare networks using `Rack::Cloudflare::Middlew
 ```ruby
 require 'rack/cloudflare'
 
-# In config.ru
+# In config.ru (recommended for Rails as well to preempt application loading)
 use Rack::Cloudflare::Middleware::AccessControl
 
-# In Rails config/application.rb
-config.middleware.use Rack::Cloudflare::Middleware::AccessControl
+# In Rails middleware: config/application.rb
+config.middleware.unshift Rack::Cloudflare::Middleware::AccessControl
 
 # Configure custom blocked message (defaults to "Forbidden")
 Rack::Cloudflare::Middleware::AccessControl.blocked_message = "You don't belong here..."
