@@ -144,7 +144,7 @@ The list can be updated to Cloudflare's latest published IP lists in-memory:
 
 ```ruby
 # Fetches Rack::Cloudflare::IPs::V4_URL and Rack::Cloudflare::IPs::V6_URL
-Rack::Cloudflare::IPs.refresh!
+Rack::Cloudflare::IPs.update!
 
 # Updates cached list in-memory
 Rack::Cloudflare::IPs.list

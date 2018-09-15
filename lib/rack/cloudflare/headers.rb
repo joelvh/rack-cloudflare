@@ -32,10 +32,6 @@ module Rack
         end
       end
 
-      self.backup                 = true
-      self.original_remote_addr   = 'ORIGINAL_REMOTE_ADDR'
-      self.original_forwarded_for = 'ORIGINAL_FORWARDED_FOR'
-
       def initialize(headers)
         @headers = headers
       end
@@ -68,17 +64,15 @@ module Rack
 
       # "Cf-Visitor: { \"scheme\":\"https\"}"
       def visitor
-        return unless has?(HTTP_CF_VISITOR)
-        ::JSON.parse @headers[HTTP_CF_VISITOR]
+        @visitor ||= ::JSON.parse @headers[HTTP_CF_VISITOR] if has?(HTTP_CF_VISITOR)
       end
 
       def remote_addr
         @remote_addr ||= IPs.parse(@headers[REMOTE_ADDR]).first
       end
 
-      # Indicates if the headers passed through Cloudflare
-      def trusted?
-        IPs.list.any? { |range| range.include? remote_addr }
+      def cloudflare_ip
+        @cloudflare_ip ||= IPs.private?(remote_addr) ? forwarded_for.last : remote_addr
       end
 
       def backup_headers
@@ -88,6 +82,12 @@ module Rack
           headers[Headers.original_remote_addr]   = @headers[REMOTE_ADDR]
           headers[Headers.original_forwarded_for] = @headers[HTTP_X_FORWARDED_FOR]
         end
+      end
+
+      # Headers that relate to Cloudflare
+      # See: https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
+      def target_headers
+        @headers.select { |k, _| ALL.include? k }
       end
 
       def rewritten_headers
@@ -105,14 +105,8 @@ module Rack
           # Cloudflare will already have modified the header if
           # it was present in the original request.
           # See: https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
-          headers[HTTP_X_FORWARDED_FOR] = "#{connecting_ip}, #{remote_addr}" if forwarded_for.none?
+          headers[HTTP_X_FORWARDED_FOR] = "#{connecting_ip}, #{cloudflare_ip}" if forwarded_for.none?
         end
-      end
-
-      # Headers that relate to Cloudflare
-      # See: https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
-      def target_headers
-        @headers.select { |k, _| ALL.include? k }
       end
 
       def rewritten_target_headers
@@ -123,9 +117,20 @@ module Rack
         @headers.merge(rewritten_headers)
       end
 
+      # Indicates if the headers passed through Cloudflare
+      def trusted?
+        @trusted ||= IPs.list.any? { |range| range.include? cloudflare_ip }
+      end
+
       def has?(header)
         @headers.key?(header)
       end
+
+      ### Configure
+
+      self.backup                 = true
+      self.original_remote_addr   = 'ORIGINAL_REMOTE_ADDR'
+      self.original_forwarded_for = 'ORIGINAL_FORWARDED_FOR'
     end
   end
 end

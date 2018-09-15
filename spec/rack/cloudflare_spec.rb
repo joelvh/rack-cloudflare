@@ -165,4 +165,21 @@ RSpec.describe Rack::Cloudflare do
       'HTTP_X_FORWARDED_FOR' => '1.2.3.4, 103.21.244.1'
     )
   end
+
+  it 'gets the Cloudflare IP from HTTP_X_FORWARDED_FOR when REMOTE_ADDR is the local network' do
+    env = {
+      'HTTP_X_FORWARDED_FOR' => '74.64.167.164, 173.245.52.147',
+      'HTTP_CF_CONNECTING_IP' => '74.64.167.164',
+      'REMOTE_ADDR' => '10.81.159.108'
+    }
+    middleware = Rack::Cloudflare::Middleware::RewriteHeaders.new(->(e) { e })
+
+    expect(middleware.call(env)).to eq(
+      'ORIGINAL_FORWARDED_FOR' => '74.64.167.164, 173.245.52.147',
+      'ORIGINAL_REMOTE_ADDR' => '10.81.159.108',
+      'REMOTE_ADDR' => '74.64.167.164',
+      'HTTP_CF_CONNECTING_IP' => '74.64.167.164',
+      'HTTP_X_FORWARDED_FOR' => '74.64.167.164, 173.245.52.147'
+    )
+  end
 end

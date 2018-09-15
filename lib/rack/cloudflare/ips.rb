@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'ipaddr'
-require 'net/http'
+require 'open-uri'
 
 module Rack
   class Cloudflare
@@ -14,13 +14,20 @@ module Rack
         # List of IPs to reference
         attr_accessor :list
 
-        # Refresh list of IPs in case local copy is outdated
-        def refresh!
+        def private?(ip)
+          PRIVATE.any? { |range| range.include? ip }
+        end
+
+        # Update list of IPs in-memory in case local copy is outdated
+        def update!
           self.list = fetch(V4_URL) + fetch(V6_URL)
         end
 
         def fetch(url)
-          parse ::Net::HTTP.get(URI(url))
+          parse URI(url).read
+        rescue OpenURI::HTTPError => ex
+          Cloudflare.error "[#{name}] #{ex.class.name} fetching #{url.inspect}: #{ex.message}"
+          []
         end
 
         def read(filename)
@@ -29,13 +36,13 @@ module Rack
 
         def parse(string)
           return [] if string.to_s.strip.empty?
-          string.split(/[,\s]+/).map { |ip| ::IPAddr.new(ip.strip) }
+          string.strip.split(/[,\s]+/).map { |ip| ::IPAddr.new(ip.strip) }
         end
       end
 
-      V4 = read("#{__dir__}/../../../data/ips_v4.txt")
-      V6 = read("#{__dir__}/../../../data/ips_v6.txt")
-
+      V4       = read("#{__dir__}/../../../data/ips_v4.txt")
+      V6       = read("#{__dir__}/../../../data/ips_v6.txt")
+      PRIVATE  = parse('10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16')
       DEFAULTS = V4 + V6
 
       ### Configure
