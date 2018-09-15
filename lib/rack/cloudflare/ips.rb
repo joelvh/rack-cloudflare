@@ -24,6 +24,7 @@ module Rack
         end
 
         def fetch(url)
+          Cloudflare.info "[#{name}] Updating Cloudflare IP list: #{url.inspect}"
           parse URI(url).read
         rescue OpenURI::HTTPError => ex
           Cloudflare.error "[#{name}] #{ex.class.name} fetching #{url.inspect}: #{ex.message}"
