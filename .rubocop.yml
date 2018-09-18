@@ -41,3 +41,7 @@ Style/Documentation:
 Metrics/ModuleLength:
   Exclude:
     - 'lib/rack/cloudflare/countries.rb'
+
+Naming/FileName:
+  Exclude:
+    - 'rack-cloudflare.gemspec'

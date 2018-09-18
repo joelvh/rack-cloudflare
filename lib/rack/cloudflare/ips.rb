@@ -37,6 +37,7 @@ module Rack
 
         def parse(string)
           return [] if string.to_s.strip.empty?
+
           string.strip.split(/[,\s]+/).map { |ip| ::IPAddr.new(ip.strip) }
         end
       end

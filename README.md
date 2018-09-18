@@ -34,10 +34,10 @@ use Rack::Cloudflare::Middleware::AccessControl
 config.middleware.unshift Rack::Cloudflare::Middleware::AccessControl
 
 # Configure custom blocked message (defaults to "Forbidden")
-Rack::Cloudflare::Middleware::AccessControl.blocked_message = "You don't belong here..."
+Rack::Cloudflare::Middleware::AccessControl.message = "You don't belong here..."
 
 # Fully customize the Rack response (such as making it a redirect)
-Rack::Cloudflare::Middleware::AccessControl.blocked_response = lambda do |_env|
+Rack::Cloudflare::Middleware::AccessControl.response = lambda do |_env|
     [301, { 'Location' => 'https://somewhere.else.xyz' }, ["Redirecting...\n"]]
 end
 ```

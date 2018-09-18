@@ -1,13 +1,14 @@
 RSpec.describe Rack::Cloudflare do
-  let!(:default_response) { Rack::Cloudflare::Middleware::AccessControl.blocked_response }
+  let!(:default_message) { Rack::Cloudflare::Middleware::AccessControl.message }
+  let!(:default_response) { Rack::Cloudflare::Middleware::AccessControl.response }
 
   before(:each) do
     Rack::Cloudflare::Headers.backup = true
     Rack::Cloudflare::Headers.original_remote_addr = 'ORIGINAL_REMOTE_ADDR'
     Rack::Cloudflare::Headers.original_forwarded_for = 'ORIGINAL_FORWARDED_FOR'
 
-    Rack::Cloudflare::Middleware::AccessControl.blocked_message = 'Forbidden'
-    Rack::Cloudflare::Middleware::AccessControl.blocked_response = default_response
+    Rack::Cloudflare::Middleware::AccessControl.message = default_message
+    Rack::Cloudflare::Middleware::AccessControl.response = default_response
   end
 
   it 'blocks access for non-Cloudflare networks' do
@@ -32,7 +33,7 @@ RSpec.describe Rack::Cloudflare do
   end
 
   it 'forbids with custom message' do
-    Rack::Cloudflare::Middleware::AccessControl.blocked_message = 'Go away'
+    Rack::Cloudflare::Middleware::AccessControl.message = 'Go away'
 
     env = { 'REMOTE_ADDR' => '127.0.0.1' }
     middleware = Rack::Cloudflare::Middleware::AccessControl.new(->(_e) { 'success' })
@@ -41,7 +42,7 @@ RSpec.describe Rack::Cloudflare do
   end
 
   it 'forbids with custom response' do
-    Rack::Cloudflare::Middleware::AccessControl.blocked_response = lambda do |_env|
+    Rack::Cloudflare::Middleware::AccessControl.response = lambda do |_env|
       [301, { 'Location' => 'https://somewhere.else.xyz' }, ["Bye bye\n"]]
     end
 
@@ -181,5 +182,30 @@ RSpec.describe Rack::Cloudflare do
       'HTTP_CF_CONNECTING_IP' => '74.64.167.164',
       'HTTP_X_FORWARDED_FOR' => '74.64.167.164, 173.245.52.147'
     )
+  end
+  
+  it 'blocks access for non-Cloudflare networks with 404 preset' do
+    env = { 'REMOTE_ADDR' => '127.0.0.1' }
+    Rack::Cloudflare::Middleware::AccessControl.as(:not_found)
+    middleware = Rack::Cloudflare::Middleware::AccessControl.new(->(*) { 'success' })
+
+    expect(middleware.call(env)).to eq([404, { 'Content-Type' => 'text/plain' }, ["Not Found\n"]])
+  end
+  
+  it 'blocks access for non-Cloudflare networks with 404 preset and custom message' do
+    env = { 'REMOTE_ADDR' => '127.0.0.1' }
+    Rack::Cloudflare::Middleware::AccessControl.as(:not_found)
+    Rack::Cloudflare::Middleware::AccessControl.message = "Oops..."
+    middleware = Rack::Cloudflare::Middleware::AccessControl.new(->(*) { 'success' })
+
+    expect(middleware.call(env)).to eq([404, { 'Content-Type' => 'text/plain' }, ["Oops...\n"]])
+  end
+  
+  it 'blocks access for non-Cloudflare networks with 404 preset and custom message keyword' do
+    env = { 'REMOTE_ADDR' => '127.0.0.1' }
+    Rack::Cloudflare::Middleware::AccessControl.as(:not_found, message: 'Woah...')
+    middleware = Rack::Cloudflare::Middleware::AccessControl.new(->(*) { 'success' })
+
+    expect(middleware.call(env)).to eq([404, { 'Content-Type' => 'text/plain' }, ["Woah...\n"]])
   end
 end
