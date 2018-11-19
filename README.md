@@ -79,6 +79,12 @@ Rack::Cloudflare::Headers.original_remote_addr   = 'BACKUP_REMOTE_ADDR'
 Rack::Cloudflare::Headers.original_forwarded_for = 'BACKUP_FORWARDED_FOR'
 ```
 
+You can set the `HTTP_X_FORWARDED_FOR` header to exactly `HTTP_CF_CONNECTING_IP`, which effectively removes proxies.
+
+```ruby
+Rack::Cloudflare::Headers.remove_proxies = true
+```
+
 See _Toolkits: Rewrite Headers_ for alternative uses.
 
 ### Logging

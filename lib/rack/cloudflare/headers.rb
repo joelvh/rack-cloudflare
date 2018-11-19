@@ -25,7 +25,7 @@ module Rack
       ALL.map { |h| const_set h, h.to_s.freeze }.freeze
 
       class << self
-        attr_accessor :backup, :original_remote_addr, :original_forwarded_for
+        attr_accessor :backup, :remove_proxies, :original_remote_addr, :original_forwarded_for
 
         def trusted?(headers)
           Headers.new(headers).trusted?
@@ -106,6 +106,9 @@ module Rack
           # it was present in the original request.
           # See: https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
           headers[HTTP_X_FORWARDED_FOR] = "#{connecting_ip}, #{cloudflare_ip}" if forwarded_for.none?
+
+          # Avoid getting the wrong IP by removing proxies
+          headers[HTTP_X_FORWARDED_FOR] = connecting_ip.to_s if connecting_ip && Headers.remove_proxies
         end
       end
 
@@ -129,6 +132,7 @@ module Rack
       ### Configure
 
       self.backup                 = true
+      self.remove_proxies         = false
       self.original_remote_addr   = 'ORIGINAL_REMOTE_ADDR'
       self.original_forwarded_for = 'ORIGINAL_FORWARDED_FOR'
     end

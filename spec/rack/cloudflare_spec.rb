@@ -4,6 +4,7 @@ RSpec.describe Rack::Cloudflare do
 
   before(:each) do
     Rack::Cloudflare::Headers.backup = true
+    Rack::Cloudflare::Headers.remove_proxies = false
     Rack::Cloudflare::Headers.original_remote_addr = 'ORIGINAL_REMOTE_ADDR'
     Rack::Cloudflare::Headers.original_forwarded_for = 'ORIGINAL_FORWARDED_FOR'
 
@@ -78,6 +79,26 @@ RSpec.describe Rack::Cloudflare do
     expect(middleware.call(env)).to eq(
       'REMOTE_ADDR' => '127.0.0.1',
       'HTTP_CF_CONNECTING_IP' => '1.2.3.4'
+    )
+  end
+
+  it "removes proxies when Headers.remove_proxies = true" do
+    env = {
+      'REMOTE_ADDR' => '103.21.244.1',
+      'HTTP_CF_CONNECTING_IP' => '1.2.3.4',
+      'HTTP_X_FORWARDED_FOR' => '1.2.3.4, 0.0.0.0, 103.21.244.1'
+    }
+
+    Rack::Cloudflare::Headers.remove_proxies = true
+
+    middleware = Rack::Cloudflare::Middleware::RewriteHeaders.new(->(e) { e })
+
+    expect(middleware.call(env)).to eq(
+      'ORIGINAL_FORWARDED_FOR' => '1.2.3.4, 0.0.0.0, 103.21.244.1',
+      'ORIGINAL_REMOTE_ADDR' => '103.21.244.1',
+      'REMOTE_ADDR' => '1.2.3.4',
+      'HTTP_CF_CONNECTING_IP' => '1.2.3.4',
+      'HTTP_X_FORWARDED_FOR' => '1.2.3.4'
     )
   end
 
