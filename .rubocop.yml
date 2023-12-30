@@ -1,47 +1,24 @@
 AllCops:
-  TargetRubyVersion: 2.5.1
-  # Rails: true
-  # Include:
-  #   - '**/Rakefile'
-  #   - '**/config.ru'
+  TargetRubyVersion: 3.1.4
+  NewCops: enable
   Exclude:
-    - 'doc/**/*'
-    - 'tmp/**/*'
     - 'bin/**/*'
-    - 'db/**/*'
-    - 'test/**/*'
-    - 'config/**/*'
-    - 'script/**/*'
-    - 'vendor/**/*'
-    - 'spec/**/*'
-    - !ruby/regexp /old_and_unused\.rb$/
 
-# Style/WhileUntilModifier:
-#   MaxLineLength: 160
-
-# Style/IfUnlessModifier:
-#   MaxLineLength: 160
-
-Metrics/LineLength:
-  Max: 160
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
 
 Metrics/AbcSize:
-  Max: 120
+  Max: 20
 
-Metrics/MethodLength:
-  CountComments: false  # count full line comments?
-  Max: 120
-
-NumericPredicate:
-  EnforcedStyle: comparison
-
-Style/Documentation:
+Metrics/CollectionLiteralLength:
   Enabled: false
 
 Metrics/ModuleLength:
   Exclude:
     - 'lib/rack/cloudflare/countries.rb'
 
-Naming/FileName:
-  Exclude:
-    - 'rack-cloudflare.gemspec'
+RSpec/ExampleLength:
+  Max: 15
+
+Style/Documentation:
+  Enabled: false

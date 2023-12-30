@@ -6,6 +6,7 @@ require 'rubocop/rake_task'
 require 'rubycritic/rake_task'
 
 RuboCop::RakeTask.new do |task|
+  task.requires << 'rubocop-rake'
   task.requires << 'rubocop-rspec'
 end
 
@@ -27,5 +28,5 @@ end
 
 RSpec::Core::RakeTask.new(:spec)
 
-# task default: %w[rubocop:auto_correct rubycritic spec]
-task default: %w[rubocop:auto_correct spec]
+# task default: %w[rubocop:autocorrect rubycritic spec]
+task default: %w[rubocop:autocorrect spec]
