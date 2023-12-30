@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 RSpec.describe Rack::Cloudflare do
   let!(:default_message) { Rack::Cloudflare::Middleware::AccessControl.message }
   let!(:default_response) { Rack::Cloudflare::Middleware::AccessControl.response }
 
-  before(:each) do
+  before do
     Rack::Cloudflare::Headers.backup = true
     Rack::Cloudflare::Headers.remove_proxies = false
     Rack::Cloudflare::Headers.original_remote_addr = 'ORIGINAL_REMOTE_ADDR'
@@ -82,7 +84,7 @@ RSpec.describe Rack::Cloudflare do
     )
   end
 
-  it "removes proxies when Headers.remove_proxies = true" do
+  it 'removes proxies when Headers.remove_proxies = true' do
     env = {
       'REMOTE_ADDR' => '103.21.244.1',
       'HTTP_CF_CONNECTING_IP' => '1.2.3.4',
@@ -204,7 +206,7 @@ RSpec.describe Rack::Cloudflare do
       'HTTP_X_FORWARDED_FOR' => '74.64.167.164, 173.245.52.147'
     )
   end
-  
+
   it 'blocks access for non-Cloudflare networks with 404 preset' do
     env = { 'REMOTE_ADDR' => '127.0.0.1' }
     Rack::Cloudflare::Middleware::AccessControl.as(:not_found)
@@ -212,16 +214,16 @@ RSpec.describe Rack::Cloudflare do
 
     expect(middleware.call(env)).to eq([404, { 'Content-Type' => 'text/plain' }, ["Not Found\n"]])
   end
-  
+
   it 'blocks access for non-Cloudflare networks with 404 preset and custom message' do
     env = { 'REMOTE_ADDR' => '127.0.0.1' }
     Rack::Cloudflare::Middleware::AccessControl.as(:not_found)
-    Rack::Cloudflare::Middleware::AccessControl.message = "Oops..."
+    Rack::Cloudflare::Middleware::AccessControl.message = 'Oops...'
     middleware = Rack::Cloudflare::Middleware::AccessControl.new(->(*) { 'success' })
 
     expect(middleware.call(env)).to eq([404, { 'Content-Type' => 'text/plain' }, ["Oops...\n"]])
   end
-  
+
   it 'blocks access for non-Cloudflare networks with 404 preset and custom message keyword' do
     env = { 'REMOTE_ADDR' => '127.0.0.1' }
     Rack::Cloudflare::Middleware::AccessControl.as(:not_found, message: 'Woah...')
